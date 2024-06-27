@@ -52,16 +52,16 @@ const calculatorDisplay = function(){
         else {
             leftDisplay = leftOperand.toString();
         }
-        display.value = leftDisplay;
+        display.textContent = leftDisplay;
     } else {
-        display.value = "0";
+        display.textContent = "0";
         return;
     }
     if (operator !== null){
-        display.value += " " + operator;
+        display.textContent += " " + operator;
     }
     if (rightOperand !== null){
-        display.value += " " + rightOperand;
+        display.textContent += " " + rightOperand;
     }
 }
 
@@ -74,8 +74,8 @@ const appendDigit = function(number, digit){
     return original;
 }
 
-let display = document.querySelector("input");
-let numberButtons = document.querySelectorAll("#numbers button");
+let display = document.querySelector("#output");
+let numberButtons = document.querySelectorAll(".number");
 numberButtons.forEach(function(button){
     button.addEventListener("click", function(){
         if (operator === null){
@@ -83,7 +83,7 @@ numberButtons.forEach(function(button){
                 leftOperand = parseInt(button.textContent);
             } else {
                 isResult = false;
-                leftOperand = appendDigit(parseFloat(display.value), button.textContent);
+                leftOperand = appendDigit(parseFloat(display.textContent), button.textContent);
             }
             calculatorDisplay();
         } else {
@@ -97,7 +97,7 @@ numberButtons.forEach(function(button){
     })
 })
 
-let operations = document.querySelectorAll("#operations button");
+let operations = document.querySelectorAll(".operator");
 operations.forEach(function(button){
     button.addEventListener("click", function(){
         if (button.textContent === "C"){
@@ -106,21 +106,18 @@ operations.forEach(function(button){
             rightOperand = null;
             operator = null;
             calculatorDisplay();
+        } else if (button.textContent === "="){
+            if (leftOperand !== null && operator !== null && rightOperand !== null){
+                let result = operate(leftOperand, operator, rightOperand);
+                isResult = true;
+                leftOperand = result;
+                operator = null;
+                rightOperand = null;
+            }
+            calculatorDisplay();
         } else if (leftOperand !== null && rightOperand === null) {
             operator = button.textContent;
             calculatorDisplay();
         }
     })
-})
-
-let equals = document.querySelector("#equals button");
-equals.addEventListener("click", function(){
-    if (leftOperand !== null && operator !== null && rightOperand !== null){
-        let result = operate(leftOperand, operator, rightOperand);
-        isResult = true;
-        leftOperand = result;
-        operator = null;
-        rightOperand = null;
-    }
-    calculatorDisplay();
 })

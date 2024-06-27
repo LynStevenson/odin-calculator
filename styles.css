@@ -1,3 +1,50 @@
-input {
-    text-align: end;
+* {
+    margin: 0;
+    font-family: "Noto Sans Mono", monospace;
+    font-weight: normal;
+    font-size: 40px;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: lightslategray;
+    display: flex;
+    justify-content: center;
+}
+
+#container {
+    display: flex;
+    margin-top: 80px;
+}
+
+#calculator {
+    display: flex;
+    flex-direction: column;
+    background-color: palegreen;
+    gap: 10px;
+    padding: 10px;
+}
+
+#output {
+    background-color: white;
+    text-align: right;
+    padding-right: 5px;
+    font-size: large;
+}
+
+button {
+    background-color: grey;
+    border-right: 0;
+    border-bottom: 0;
+    border-top: 2px solid black;
+    border-left: 2px solid black;
+    width: 40px;
+}
+
+#buttons {
+    background-color: darkgreen;
+    width: 160px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
 }
