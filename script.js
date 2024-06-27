@@ -34,23 +34,30 @@ const operate = function(x, operation, y){
 
 let isResult = false;
 let leftOperand = null; //should be only variable that exists temporarily as a computated float. ie: .33333 forever
+let leftHasDecimal = false;
 let rightOperand = null;
+let rightHasDecimal = false;
 let operator = null;
-const precision = 3;
+const precision = 3;//how many digits after decimal
 
 //should never need to be changed
 const trimFixed = function(fixed){
-    return fixed.replace(/\.0*$|(?<=\.\d+)0+$/,"");
+    return fixed.replace(/(?<=\.\d+)0+$/,"");
 }
 
 const calculatorDisplay = function(){
     if (leftOperand !== null){
         let leftDisplay;
-        if (isResult){
+        if (leftOperand === Infinity){
+            leftDisplay = "Can't divide by 0!"
+        } else if (isResult){
             leftDisplay = leftOperand.toFixed(precision);
             leftDisplay = trimFixed(leftDisplay);}
         else {
             leftDisplay = leftOperand.toString();
+            if (leftHasDecimal && !leftDisplay.includes(".")){
+                leftDisplay += ".";
+            }
         }
         display.textContent = leftDisplay;
     } else {
@@ -69,6 +76,9 @@ const calculatorDisplay = function(){
 //Should not need to change this
 const appendDigit = function(number, digit){
     let original = number.toString();
+    if (leftHasDecimal && !original.includes(".")){
+        original += ".";
+    }
     original += digit;
     original = parseFloat(original);
     return original;
@@ -78,12 +88,22 @@ let display = document.querySelector("#output");
 let numberButtons = document.querySelectorAll(".number");
 numberButtons.forEach(function(button){
     button.addEventListener("click", function(){
+        if (leftOperand === Infinity){
+            return;
+        }
         if (operator === null){
             if (leftOperand === null){
-                leftOperand = parseInt(button.textContent);
+                if (!button.classList.contains("decimal")){
+                    leftOperand = parseInt(button.textContent);
+                }
             } else {
                 isResult = false;
-                leftOperand = appendDigit(parseFloat(display.textContent), button.textContent);
+                if (button.classList.contains("decimal") && !leftHasDecimal){
+                    leftHasDecimal = true;
+                }
+                else {
+                    leftOperand = appendDigit(parseFloat(display.textContent), button.textContent);
+                }
             }
             calculatorDisplay();
         } else {
@@ -103,7 +123,9 @@ operations.forEach(function(button){
         if (button.textContent === "C"){
             isResult = false;
             leftOperand = null;
+            leftHasDecimal = false;
             rightOperand = null;
+            rightHasDecimal = false;
             operator = null;
             calculatorDisplay();
         } else if (button.textContent === "="){
@@ -115,7 +137,7 @@ operations.forEach(function(button){
                 rightOperand = null;
             }
             calculatorDisplay();
-        } else if (leftOperand !== null && rightOperand === null) {
+        } else if (leftOperand !== null && rightOperand === null && leftOperand !== Infinity) {
             operator = button.textContent;
             calculatorDisplay();
         }
