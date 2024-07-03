@@ -15,8 +15,6 @@ const divide = function(x, y){
 }
 
 const operate = function(x, operation, y){
-    x = parseFloat(x)
-    y = parseFloat(y)
     try {
         if (operation == "+") {
             return add(x, y);
@@ -33,31 +31,28 @@ const operate = function(x, operation, y){
 }
 
 let isResult = false;
-let leftOperand = null; //should be only variable that exists temporarily as a computated float. ie: .33333 forever
+let leftOperand = null;
 let leftHasDecimal = false;
 let rightOperand = null;
 let rightHasDecimal = false;
 let operator = null;
 const precision = 3;//how many digits after decimal
 
-//should never need to be changed
 const trimFixed = function(fixed){
-    return fixed.replace(/(?<=\.\d+)0+$/,"");
+    return fixed.replace(/(?<=\.\d*)0+$|\.0*$/,"");
 }
 
+//assume operands are strings
 const calculatorDisplay = function(){
     if (leftOperand !== null){
         let leftDisplay;
         if (leftOperand === Infinity){
             leftDisplay = "Can't divide by 0!"
         } else if (isResult){
-            leftDisplay = leftOperand.toFixed(precision);
+            leftDisplay = parseFloat(leftOperand).toFixed(precision);
             leftDisplay = trimFixed(leftDisplay);}
         else {
-            leftDisplay = leftOperand.toString();
-            if (leftHasDecimal && !leftDisplay.includes(".")){
-                leftDisplay += ".";
-            }
+            leftDisplay = leftOperand;
         }
         display.textContent = leftDisplay;
     } else {
@@ -72,18 +67,6 @@ const calculatorDisplay = function(){
     }
 }
 
-
-//Should not need to change this
-const appendDigit = function(number, digit){
-    let original = number.toString();
-    if (leftHasDecimal && !original.includes(".")){
-        original += ".";
-    }
-    original += digit;
-    original = parseFloat(original);
-    return original;
-}
-
 let display = document.querySelector("#output");
 let numberButtons = document.querySelectorAll(".number");
 numberButtons.forEach(function(button){
@@ -93,24 +76,45 @@ numberButtons.forEach(function(button){
         }
         if (operator === null){
             if (leftOperand === null){
-                if (!button.classList.contains("decimal")){
-                    leftOperand = parseInt(button.textContent);
+                if (button.classList.contains("decimal")){
+                    leftOperand = "0.";
+                    leftHasDecimal = true;
+                } else {
+                    leftOperand = button.textContent;
                 }
             } else {
-                isResult = false;
                 if (button.classList.contains("decimal") && !leftHasDecimal){
                     leftHasDecimal = true;
+                    if (isResult){
+                        leftOperand = display.textContent;
+                    }
+                    leftOperand += ".";
+                    isResult = false;
                 }
-                else {
-                    leftOperand = appendDigit(parseFloat(display.textContent), button.textContent);
+                else if(!button.classList.contains("decimal")) {
+                    if (isResult){
+                        leftOperand = display.textContent;
+                    }
+                    leftOperand += button.textContent;
+                    isResult = false;
                 }
             }
             calculatorDisplay();
         } else {
             if (rightOperand === null){
-                rightOperand = parseInt(button.textContent);
+                if (button.classList.contains("decimal")){
+                    rightHasDecimal = true;
+                    rightOperand = "0.";
+                } else {
+                    rightOperand = button.textContent;
+                }
             } else {
-                rightOperand = appendDigit(rightOperand, button.textContent);
+                if(button.classList.contains("decimal") && !rightHasDecimal){
+                    rightHasDecimal = true;
+                    rightOperand += ".";
+                } else if (!button.classList.contains("decimal")){
+                   rightOperand += button.textContent;
+                }
             }
             calculatorDisplay();
         }
@@ -127,19 +131,44 @@ operations.forEach(function(button){
             rightOperand = null;
             rightHasDecimal = false;
             operator = null;
-            calculatorDisplay();
         } else if (button.textContent === "="){
             if (leftOperand !== null && operator !== null && rightOperand !== null){
-                let result = operate(leftOperand, operator, rightOperand);
+                let result = operate(parseFloat(leftOperand), operator, parseFloat(rightOperand));
                 isResult = true;
-                leftOperand = result;
+                leftOperand = result.toString();
+                if (leftOperand.includes(".")){
+                    leftHasDecimal = true;
+                } else {
+                    leftHasDecimal = false;
+                }
                 operator = null;
                 rightOperand = null;
+                rightHasDecimal = false;
             }
-            calculatorDisplay();
+        } else if (button.classList.contains("backspace")){
+            if (rightOperand !== null) {
+                if (rightOperand.slice(-1) === "."){
+                    rightHasDecimal = false;
+                }
+                rightOperand = rightOperand.slice(0, -1);
+                if (rightOperand === ""){
+                    rightOperand = null;
+                }
+            } else if(operator !== null){
+                operator = null;
+            } else if (leftOperand !== null){
+                if (leftOperand.slice(-1) === "."){
+                    leftHasDecimal = false;
+                }
+                leftOperand = leftOperand.slice(0,-1);
+                if (leftOperand === ""){
+                    leftOperand = null;
+                }
+                isResult = false;
+            }
         } else if (leftOperand !== null && rightOperand === null && leftOperand !== Infinity) {
             operator = button.textContent;
-            calculatorDisplay();
         }
+        calculatorDisplay();
     })
 })
