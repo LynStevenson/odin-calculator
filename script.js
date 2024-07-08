@@ -70,7 +70,11 @@ const operandInput = function(input){
     if (leftOperand === "Infinity"){
         return;
     }
-    if (operator === null){
+    if (operator === null && !(input === "." && leftHasDecimal)){
+        if (isResult){
+            leftOperand = display.textContent;
+            isResult = false;
+        }
         if (leftOperand === "0"){
             if (input === "."){
                 leftOperand = "0.";
@@ -79,23 +83,12 @@ const operandInput = function(input){
                 leftOperand = input;
             }
         } else {
-            if (input === "." && !leftHasDecimal){
+            if (input === "."){
                 leftHasDecimal = true;
-                if (isResult){
-                    leftOperand = display.textContent;
-                }
-                leftOperand += ".";
-                isResult = false;
             }
-            else if(input !== ".") {
-                if (isResult){
-                    leftOperand = display.textContent;
-                }
-                leftOperand += input;
-                isResult = false;
-            }
+            leftOperand += input;
         }
-    } else {
+    } else if (operator !== null && !(input === "." && rightHasDecimal)) {
         if (rightOperand === null || rightOperand === "0"){
             if (input === "."){
                 rightHasDecimal = true;
@@ -104,12 +97,10 @@ const operandInput = function(input){
                 rightOperand = input;
             }
         } else {
-            if(input === "." && !rightHasDecimal){
+            if(input === "."){
                 rightHasDecimal = true;
-                rightOperand += ".";
-            } else if (input !== "."){
-               rightOperand += input;
             }
+            rightOperand += input;
         }
     }
     calculatorDisplay();
