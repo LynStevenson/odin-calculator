@@ -31,7 +31,8 @@ const operate = function(x, operation, y){
 }
 
 let isResult = false;
-let leftOperand = null;
+let leftOperand = "0";//default should be 0?
+let leftDisplay = null;
 let leftHasDecimal = false;
 let rightOperand = null;
 let rightHasDecimal = false;
@@ -45,21 +46,18 @@ const trimFixed = function(fixed){
 //assume operands are strings
 let display = document.querySelector("#output");
 const calculatorDisplay = function(){
-    if (leftOperand !== null){
-        let leftDisplay;
-        if (leftOperand === Infinity){
-            leftDisplay = "Can't divide by 0!"
-        } else if (isResult){
-            leftDisplay = parseFloat(leftOperand).toFixed(precision);
-            leftDisplay = trimFixed(leftDisplay);}
-        else {
-            leftDisplay = leftOperand;
+    if (leftOperand === "Infinity"){
+        leftDisplay = "Can't divide by 0!"
+    } else if (isResult){
+        leftDisplay = parseFloat(leftOperand).toFixed(precision);
+        leftDisplay = trimFixed(leftDisplay);
+        if (leftDisplay === "-0"){
+            leftDisplay = "0";
         }
-        display.textContent = leftDisplay;
     } else {
-        display.textContent = "0";
-        return;
+        leftDisplay = leftOperand;
     }
+    display.textContent = leftDisplay;
     if (operator !== null){
         display.textContent += " " + operator;
     }
@@ -69,11 +67,11 @@ const calculatorDisplay = function(){
 }
 
 const operandInput = function(input){
-    if (leftOperand === Infinity){
+    if (leftOperand === "Infinity"){
         return;
     }
     if (operator === null){
-        if (leftOperand === null){
+        if (leftOperand === "0"){
             if (input === "."){
                 leftOperand = "0.";
                 leftHasDecimal = true;
@@ -97,9 +95,8 @@ const operandInput = function(input){
                 isResult = false;
             }
         }
-        calculatorDisplay();
     } else {
-        if (rightOperand === null){
+        if (rightOperand === null || rightOperand === "0"){
             if (input === "."){
                 rightHasDecimal = true;
                 rightOperand = "0.";
@@ -114,20 +111,22 @@ const operandInput = function(input){
                rightOperand += input;
             }
         }
-        calculatorDisplay();
     }
+    calculatorDisplay();
 }
 
 const operatorInput = function(input){
     if (input === "C"){
         isResult = false;
-        leftOperand = null;
+        leftOperand = "0";
         leftHasDecimal = false;
         rightOperand = null;
         rightHasDecimal = false;
         operator = null;
+    } else if (leftOperand === "Infinity"){
+        return;
     } else if (input === "="){
-        if (leftOperand !== null && operator !== null && rightOperand !== null){
+        if (rightOperand !== null){
             let result = operate(parseFloat(leftOperand), operator, parseFloat(rightOperand));
             isResult = true;
             leftOperand = result.toString();
@@ -151,17 +150,23 @@ const operatorInput = function(input){
             }
         } else if(operator !== null){
             operator = null;
-        } else if (leftOperand !== null){
+        } else if (leftOperand !== "0"){
+            if (isResult){
+                leftOperand = leftDisplay;
+                isResult = false;
+            }
             if (leftOperand.slice(-1) === "."){
                 leftHasDecimal = false;
             }
             leftOperand = leftOperand.slice(0,-1);
             if (leftOperand === ""){
-                leftOperand = null;
+                leftOperand = "0";
             }
-            isResult = false;
         }
-    } else if (leftOperand !== null && rightOperand === null && leftOperand !== Infinity) {
+    } else if (rightOperand === null) {
+        if (input.search(/[x*]/) !== -1){
+            input = "X";
+        }
         operator = input;
     }
     calculatorDisplay();
@@ -180,7 +185,7 @@ operations.forEach(function(button){
 document.addEventListener("keydown", function(e){
     if (e.key.search(/[0-9.]/) !== -1){
         operandInput(e.key);
-    } else if (e.key.search(/[+\-/*]|Backspace/) !== -1){
+    } else if (e.key.search(/[xX+\-/*]|Backspace/) !== -1){
         operatorInput(e.key);
     } else if (e.key === "c" || e.key === "C") {
         operatorInput("C");
