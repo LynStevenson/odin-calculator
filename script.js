@@ -121,6 +121,9 @@ const operatorInput = function(input){
             let result = operate(parseFloat(leftOperand), operator, parseFloat(rightOperand));
             isResult = true;
             leftOperand = result.toString();
+            if (leftOperand === "-Infinity"){
+                leftOperand = "Infinity";
+            }
             if (leftOperand.includes(".")){
                 leftHasDecimal = true;
             } else {
@@ -173,14 +176,51 @@ operations.forEach(function(button){
     button.addEventListener("click", () => operatorInput(button.textContent))
 })
 
+const buttonAnim = [{translate: "4px 4px", backgroundColor: "rgb(224, 224, 224)", boxShadow: "0 0" }];
+const buttonTime = {duration: 100, iterations: 1};
+
 document.addEventListener("keydown", function(e){
-    if (e.key.search(/[0-9.]/) !== -1){
+    if (e.key.search(/^[0-9.]$/) !== -1){
+        numberButtons.forEach(function(button){
+            if (e.key === button.textContent){
+                button.animate(buttonAnim, buttonTime);
+            }
+        })
         operandInput(e.key);
-    } else if (e.key.search(/[xX+\-/*]|Backspace/) !== -1){
+    } else if (e.key.search(/^[xX*]$/) !== -1){
+        operations.forEach(function(button){
+            if(button.textContent === "X"){
+                button.animate(buttonAnim, buttonTime);
+            }
+        })
+        operatorInput(e.key);
+    } else if (e.key.search(/^[\-/+]$/) !== -1){
+        operations.forEach(function(button){
+            if(button.textContent === e.key){
+                button.animate(buttonAnim, buttonTime);
+            }
+        })
         operatorInput(e.key);
     } else if (e.key === "c" || e.key === "C") {
+        operations.forEach(function(button){
+            if(button.textContent === "C"){
+                button.animate(buttonAnim, buttonTime);
+            }
+        })
         operatorInput("C");
     } else if (e.key === "Enter" || e.key === "=") {
+        operations.forEach(function(button){
+            if (button.textContent === "="){
+                button.animate(buttonAnim, buttonTime);
+            }
+        })
         operatorInput("=");
+    } else if (e.key === "Backspace"){
+        operations.forEach(function(button){
+            if (button.textContent === "del"){
+                button.animate(buttonAnim, buttonTime);
+            }
+        })
+        operatorInput(e.key);
     }
 })
